@@ -1,1 +1,256 @@
 
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cek Lengkap Tanggal Lahir</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #808, #66a6ff);
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    background: #2238;
+    padding: 30px;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 500px;
+  }
+  .form-group {
+    margin-bottom: 16px;
+  }
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #fff;
+  }
+  input[type="text"], input[type="date"] {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+    font-size: 16px;
+    background-color: #eee;
+    color: #000;
+  }
+  button {
+    width: 100%;
+    padding: 12px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  #hasil {
+    margin-top: 20px;
+    color: #fff;
+  }
+  .hidden {
+    display: none;
+  }
+  footer {
+    position: fixed;
+    bottom: 10px;
+    width: 100%;
+    text-align: center;
+    font-size: 12px;
+    color: #eee;
+    opacity: 0.4;
+  }
+</style>
+</head>
+<body>
+<div class="container" id="form-container">
+  <div class="form-group">
+    <label for="nama">Masukkan Nama</label>
+    <input type="text" id="nama" placeholder="Nama Anda" />
+  </div>
+  <div class="form-group">
+    <label for="tanggalLahir">Masukkan Tanggal Lahir</label>
+    <input type="date" id="tanggalLahir" min="1900-01-01" max="2025-12-31" />
+  </div>
+  <button onclick="prosesData()">Cek</button>
+</div>
+<div class="container hidden" id="hasil"></div>
+<footer>©jaketkuning</footer>
+
+<script>
+function prosesData() {
+  const nama = document.getElementById("nama").value.trim();
+  const input = document.getElementById("tanggalLahir").value;
+
+  if (!nama || !input) {
+    alert("Mohon lengkapi nama dan tanggal lahir.");
+    return;
+  }
+
+  const tgl = new Date(input);
+  const today = new Date();
+
+  // Daftar hari dan pasaran
+  const hariList = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
+  const pasaranList = ["Legi", "Pahing", "Pon", "Wage", "Kliwon"];
+
+  // Hitung usia tahun, bulan, hari
+  let usiaTahun = today.getFullYear() - tgl.getFullYear();
+  let usiaBulan = today.getMonth() - tgl.getMonth();
+  let usiaHari = today.getDate() - tgl.getDate();
+
+  if (usiaHari < 0) {
+    usiaBulan--;
+    usiaHari += new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+  }
+  if (usiaBulan < 0) {
+    usiaTahun--;
+    usiaBulan += 12;
+  }
+
+  // Total hari hidup
+  const totalHari = Math.floor((today - tgl) / (1000 * 60 * 60 * 24));
+
+  // Kategori usia
+  let kategoriUsia = "Anak";
+  if (usiaTahun >= 60) kategoriUsia = "Lansia";
+  else if (usiaTahun >= 18) kategoriUsia = "Dewasa";
+  else if (usiaTahun >= 12) kategoriUsia = "Remaja";
+
+  // Kategori generasi
+  const generasi = getKategoriGenerasi(tgl.getFullYear());
+
+  // Status produktif
+  const usiaProduktif = (usiaTahun >= 15 && usiaTahun <= 64) ? "Produktif" : "Tidak Produktif";
+
+  // Hitung weton (hari pasaran Jawa)
+  // Referensi patokan 1 Januari 1990 = Senin Wage (Senin index 1, Wage index 3)
+  const refDate = new Date(1990, 0, 1);
+  const refHari = 1;
+  const refPasaran = 3;
+  const selisih = Math.floor((tgl - refDate) / (1000 * 60 * 60 * 24));
+  const hari = hariList[(refHari + selisih % 7 + 7) % 7];
+  const pasaran = pasaranList[(refPasaran + selisih % 5 + 5) % 5];
+  const weton = `${hari} ${pasaran}`;
+
+  // Zodiak dan horoskop
+  const zodiak = getZodiak(tgl);
+  const horoskopZodiak = getHoroskopZodiak(zodiak);
+
+  // Shio dan horoskop
+  const shio = getShio(tgl.getFullYear());
+  const elemenShio = getElemenShio(tgl.getFullYear());
+  const horoskopShio = getHoroskopShio(shio);
+
+  // Format tanggal lahir dd-mm-yyyy
+  const tanggalLahirFormat = formatTanggal(tgl);
+
+  // Tampilkan hasil
+  const hasilDiv = document.getElementById("hasil");
+  hasilDiv.innerHTML = `
+    <h3>Hasil untuk ${nama}</h3>
+    <p><strong>Tanggal Lahir:</strong> ${tanggalLahirFormat}</p>
+    <p><strong>Weton Jawa:</strong> ${weton}</p>
+    <p><strong>Usia:</strong> ${usiaTahun} tahun, ${usiaBulan} bulan, ${usiaHari} hari</p>
+    <p><strong>Total Hari Hidup:</strong> ${totalHari} hari</p>
+    <p><strong>Kategori Usia:</strong> ${kategoriUsia}</p>
+    <p><strong>Kategori Generasi:</strong> ${generasi}</p>
+    <p><strong>Status Produktif:</strong> ${usiaProduktif}</p>
+    <p><strong>Zodiak:</strong> ${zodiak}</p>
+    <p><strong>Horoskop Zodiak:</strong> ${horoskopZodiak}</p>
+    <p><strong>Shio:</strong> ${shio} (${elemenShio})</p>
+    <p><strong>Horoskop Shio:</strong> ${horoskopShio}</p>
+  `;
+
+  document.getElementById("form-container").classList.add("hidden");
+  hasilDiv.classList.remove("hidden");
+}
+
+function formatTanggal(tgl) {
+  const dd = String(tgl.getDate()).padStart(2, '0');
+  const mm = String(tgl.getMonth() + 1).padStart(2, '0');
+  const yyyy = tgl.getFullYear();
+  return `${dd}-${mm}-${yyyy}`;
+}
+
+function getZodiak(tgl) {
+  const d = tgl.getDate();
+  const m = tgl.getMonth() + 1;
+  if ((m == 1 && d <= 19) || (m == 12 && d >= 22)) return "Capricorn";
+  if ((m == 1 && d >= 20) || (m == 2 && d <= 18)) return "Aquarius";
+  if ((m == 2 && d >= 19) || (m == 3 && d <= 20)) return "Pisces";
+  if ((m == 3 && d >= 21) || (m == 4 && d <= 19)) return "Aries";
+  if ((m == 4 && d >= 20) || (m == 5 && d <= 20)) return "Taurus";
+  if ((m == 5 && d >= 21) || (m == 6 && d <= 20)) return "Gemini";
+  if ((m == 6 && d >= 21) || (m == 7 && d <= 22)) return "Cancer";
+  if ((m == 7 && d >= 23) || (m == 8 && d <= 22)) return "Leo";
+  if ((m == 8 && d >= 23) || (m == 9 && d <= 22)) return "Virgo";
+  if ((m == 9 && d >= 23) || (m == 10 && d <= 22)) return "Libra";
+  if ((m == 10 && d >= 23) || (m == 11 && d <= 21)) return "Scorpio";
+  if ((m == 11 && d >= 22) || (m == 12 && d <= 21)) return "Sagitarius";
+}
+
+function getShio(year) {
+  const shioList = ["Tikus", "Kerbau", "Macan", "Kelinci", "Naga", "Ular", "Kuda", "Kambing", "Monyet", "Ayam", "Anjing", "Babi"];
+  return shioList[(year - 4) % 12];
+}
+
+function getElemenShio(year) {
+  // Elemen berganti setiap 2 tahun dengan urutan Kayu, Api, Tanah, Logam, Air
+  const elemenList = ["Kayu", "Api", "Tanah", "Logam", "Air"];
+  return elemenList[Math.floor(((year - 4) % 10) / 2)];
+}
+
+function getKategoriGenerasi(year) {
+  if (year <= 1945) return "Veteran";
+  if (year <= 1964) return "Baby Boomer";
+  if (year <= 1980) return "Generasi X";
+  if (year <= 1996) return "Millennial";
+  if (year <= 2012) return "Generasi Z";
+  return "Generasi Alpha";
+}
+
+function getHoroskopZodiak(zodiak) {
+  const horoskop = {
+    "Aries": "Enerjik, berani, dan percaya diri.",
+    "Taurus": "Sabar, teliti, dan sangat setia.",
+    "Gemini": "Cerdas, komunikatif, dan mudah beradaptasi.",
+    "Cancer": "Emosional, penyayang, dan sangat intuitif.",
+    "Leo": "Pemimpin alami, percaya diri, dan bersemangat.",
+    "Virgo": "Perfeksionis, analitis, dan pekerja keras.",
+    "Libra": "Ramah, adil, dan menyukai keseimbangan.",
+    "Scorpio": "Misterius, intens, dan penuh gairah.",
+    "Sagitarius": "Optimis, suka berpetualang, dan jujur.",
+    "Capricorn": "Disiplin, bertanggung jawab, dan realistis.",
+    "Aquarius": "Inovatif, mandiri, dan penuh ide-ide baru.",
+    "Pisces": "Penuh empati, artistik, dan intuitif."
+  };
+  return horoskop[zodiak] || "";
+}
+
+function getHoroskopShio(shio) {
+  const horoskop = {
+    "Tikus": "Cerdas, lincah, dan pekerja keras.",
+    "Kerbau": "Sabar, jujur, dan setia.",
+    "Macan": "Berani, kompetitif, dan penuh energi.",
+    "Kelinci": "Lembut, penyayang, dan berhati-hati.",
+    "Naga": "Bersemangat, percaya diri, dan kuat.",
+    "Ular": "Bijaksana, misterius, dan intuitif.",
+    "Kuda": "Enerjik, bebas, dan suka petualangan.",
+    "Kambing": "Tenang, kreatif, dan penuh kasih sayang.",
+    "Monyet": "Cerdas, lucu, dan mudah beradaptasi.",
+    "Ayam": "Teliti, berani, dan pekerja keras.",
+    "Anjing": "Setia, jujur, dan pelindung.",
+    "Babi": "Ramah, penyayang, dan mudah bergaul."
+  };
+  return horoskop[shio] || "";
+}
+</script>
+</body>
+</html>
